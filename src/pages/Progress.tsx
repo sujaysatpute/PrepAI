@@ -48,13 +48,13 @@ function calculateStreak(sessions: InterviewSession[]): number {
 
 export default function Progress() {
   const navigate = useNavigate();
-  const { userName } = useAuth();
+  const { userName, storageId } = useAuth();
   const [sessions, setSessions] = useState<InterviewSession[]>([]);
 
   useEffect(() => {
-    const stored = getStoredSessions(userName || undefined);
+    const stored = getStoredSessions(storageId);
     setSessions(stored);
-  }, [userName]);
+  }, [storageId]);
 
   const totalInterviews = sessions.length;
   const averageScore = totalInterviews > 0 
@@ -100,8 +100,8 @@ export default function Progress() {
 
   const handleClearHistory = () => {
     if (confirm('Are you sure you want to clear your local interview history? This cannot be undone.')) {
-      const safeName = (userName || 'guest').toLowerCase().replace(/[^a-z0-9_-]/g, '_');
-      localStorage.removeItem(`prepAI_sessions_${safeName}`);
+      const safeKey = (storageId || 'guest').toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+      localStorage.removeItem(`prepAI_sessions_${safeKey}`);
       localStorage.removeItem('interviewSessions');
       setSessions([]);
     }

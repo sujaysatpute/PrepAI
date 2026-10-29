@@ -11,7 +11,7 @@ import { useAuth } from '../context/AuthContext';
 export default function ResultScreen() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { userName } = useAuth();
+  const { userName, storageId } = useAuth();
 
   const [session, setSession] = useState<InterviewSession | null>(null);
   const [isEvaluating, setIsEvaluating] = useState<boolean>(true);
@@ -31,7 +31,7 @@ export default function ResultScreen() {
     history: ChatMessage[]
   ) => {
     // If this session is already saved, load it immediately without re-evaluating
-    const existing = getSessionById(sessionId, userName || undefined);
+    const existing = getSessionById(sessionId, storageId);
     if (existing) {
       setSession(existing);
       setIsEvaluating(false);
@@ -60,7 +60,7 @@ export default function ResultScreen() {
         evaluation: evalResult,
       };
 
-      saveInterviewSession(newSession, userName || undefined);
+      saveInterviewSession(newSession, storageId);
       setSession(newSession);
       setIsEvaluating(false);
     } catch (err: any) {
@@ -86,7 +86,7 @@ export default function ResultScreen() {
     const paramId = params.get('id');
 
     if (paramId) {
-      const found = getSessionById(paramId, userName || undefined);
+      const found = getSessionById(paramId, storageId);
       if (found) {
         setSession(found);
         setIsEvaluating(false);
@@ -95,7 +95,7 @@ export default function ResultScreen() {
     }
 
     // 3. Fallback to the most recent stored session
-    const stored = getStoredSessions(userName || undefined);
+    const stored = getStoredSessions(storageId);
     if (stored.length > 0) {
       setSession(stored[0]);
       setIsEvaluating(false);
@@ -103,7 +103,7 @@ export default function ResultScreen() {
       setIsEvaluating(false);
       // No sessions available
     }
-  }, [location.state, location.search, userName]);
+  }, [location.state, location.search, storageId]);
 
   // Loading state
   if (isEvaluating) {

@@ -9,6 +9,9 @@ build/
 .env*
 !.env.example
 
+# Local user data store
+.data/
+
 # Vercel output
 .vercel/
 

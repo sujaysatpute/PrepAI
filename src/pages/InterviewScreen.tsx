@@ -11,7 +11,7 @@ import { getStoredRole } from '../utils/storage';
 export default function InterviewScreen({ selectedRole }: { selectedRole: Role | null }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { userName } = useAuth();
+  const { userName, storageId } = useAuth();
   
   const storedRole = getStoredRole();
   const locState = location.state as any;
@@ -32,7 +32,7 @@ export default function InterviewScreen({ selectedRole }: { selectedRole: Role |
     sendAnswer,
     retryLastTurn,
     finishInterview,
-  } = useInterview(userName || undefined);
+  } = useInterview(storageId || userName || undefined);
 
   const [answer, setAnswer] = useState('');
   const [isListening, setIsListening] = useState(false);

@@ -8,9 +8,13 @@ function devApiPlugin(env: Record<string, string>): Plugin {
     name: 'dev-api-middleware',
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
-        if (req.url === '/api/interview' && req.method === 'POST') {
+        const rawUrl = req.url || '';
+        const urlPath = rawUrl.split('?')[0];
+
+        if (urlPath === '/api/interview' || urlPath === '/api/auth') {
           try {
             process.env.GEMINI_API_KEY = env.GEMINI_API_KEY || env.VITE_GEMINI_API_KEY;
+            process.env.AUTH_SECRET = env.AUTH_SECRET || 'prepai-secure-session-auth-key-2026';
             
             const buffers: Buffer[] = [];
             for await (const chunk of req) {
@@ -25,14 +29,30 @@ function devApiPlugin(env: Record<string, string>): Plugin {
               }
             }
 
-            const webReq = new Request('http://localhost:3000/api/interview', {
-              method: 'POST',
+            const method = req.method || 'GET';
+            const fullUrl = `http://localhost:3000${rawUrl}`;
+            const reqInit: RequestInit = {
+              method,
               headers,
-              body: bodyText,
-            });
+            };
+            if (method !== 'GET' && method !== 'HEAD') {
+              reqInit.body = bodyText;
+            }
 
-            const { POST } = await server.ssrLoadModule('/api/interview.ts');
-            const webRes: Response = await POST(webReq);
+            const webReq = new Request(fullUrl, reqInit);
+
+            const modulePath = urlPath === '/api/auth' ? '/api/auth.ts' : '/api/interview.ts';
+            const mod = await server.ssrLoadModule(modulePath);
+            const handler = mod[method];
+
+            if (typeof handler !== 'function') {
+              res.statusCode = 405;
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ error: `Method ${method} not allowed` }));
+              return;
+            }
+
+            const webRes: Response = await handler(webReq);
 
             res.statusCode = webRes.status;
             webRes.headers.forEach((val, key) => {
@@ -59,6 +79,7 @@ export default defineConfig(({ mode }) => {
   
   // Expose to server-side Node runtime only, NOT into the client bundle
   process.env.GEMINI_API_KEY = env.GEMINI_API_KEY || env.VITE_GEMINI_API_KEY;
+  process.env.AUTH_SECRET = env.AUTH_SECRET || 'prepai-secure-session-auth-key-2026';
 
   return {
     plugins: [react(), tailwindcss(), devApiPlugin(env)],

@@ -1,13 +1,18 @@
 import { ActiveInterview, InterviewSession, Role } from './types';
 
-function getSessionKey(userName?: string): string {
-  const safeName = (userName || 'guest').toLowerCase().replace(/[^a-z0-9_-]/g, '_');
-  return `prepAI_sessions_${safeName}`;
+function normalizeUserKey(userKey?: string): string {
+  if (!userKey) return 'guest';
+  return userKey.toLowerCase().replace(/[^a-z0-9_-]/g, '_');
 }
 
-function getActiveKey(userName?: string): string {
-  const safeName = (userName || 'guest').toLowerCase().replace(/[^a-z0-9_-]/g, '_');
-  return `prepAI_active_interview_${safeName}`;
+function getSessionKey(userKey?: string): string {
+  const safe = normalizeUserKey(userKey);
+  return `prepAI_sessions_${safe}`;
+}
+
+function getActiveKey(userKey?: string): string {
+  const safe = normalizeUserKey(userKey);
+  return `prepAI_active_interview_${safe}`;
 }
 
 const ROLE_STORAGE_KEY = 'prepAI_selected_role';

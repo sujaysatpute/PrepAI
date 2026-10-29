@@ -6,11 +6,11 @@ import { getActiveInterview, getStoredSessions, setStoredRole } from '../utils/s
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { userName } = useAuth();
+  const { userName, storageId } = useAuth();
   
   const displayName = userName || 'Candidate';
-  const activeSession = getActiveInterview(userName || undefined);
-  const recentSessions = getStoredSessions(userName || undefined);
+  const activeSession = getActiveInterview(storageId);
+  const recentSessions = getStoredSessions(storageId);
   const lastSession = recentSessions[0];
 
   const handleContinueLast = () => {

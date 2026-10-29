@@ -10,10 +10,13 @@ export default function Navbar() {
   const { isLoggedIn, userName, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleLogout = () => {
-    logout();
-    setMobileMenuOpen(false);
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } finally {
+      setMobileMenuOpen(false);
+      navigate('/');
+    }
   };
 
   const navLinks = [
